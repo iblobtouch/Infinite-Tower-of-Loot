@@ -58,6 +58,8 @@ function tickManager() {
 function resize() {
     c.width = window.innerWidth;
 	c.height = window.innerHeight;
+    dc.width = 256;
+	dc.height = 256;
 }
 resize();
 

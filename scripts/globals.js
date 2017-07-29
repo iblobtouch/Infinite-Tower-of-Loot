@@ -99,8 +99,8 @@ function GenWeapon() {
     
     dctx.clearRect(0, 0, dc.width, dc.height);
     
-    dctx.drawImage(imgs[0], Math.floor(2 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
-    dctx.drawImage(imgs[1], Math.floor(2 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
+    dctx.drawImage(imgs[0], Math.floor(5 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
+    dctx.drawImage(imgs[1], Math.floor(4 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
     
     wep.Image = recolor(defaultColors, wep.colors);
     
@@ -113,6 +113,8 @@ function GenWeapon() {
         }
     }
     dctx.restore();
+    
+    dctx.putImageData(wep.Image, 0, 0);
     
     return wep;
 }
