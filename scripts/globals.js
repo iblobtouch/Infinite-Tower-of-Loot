@@ -1,3 +1,29 @@
+function Game () {
+    this.currentWep = {};
+    this.currentEnemy = {};
+    this.mouse = {};
+    this.state = {};
+    
+    this.sourceImgConsts = {};
+    this.sourceImgConsts.width = 64;
+    //The width of each individual sprite in the source files.
+    this.sourceImgConsts.height = 64;
+    //The height of each individual sprite in the source files.
+    this.sourceImgConsts.numBlades = 6;
+    //The number of blades in the blade source file.
+    this.sourceImgConsts.numHandles = 5;
+    //The number of handles in the handle source file.s
+    this.state.floorNum = 0;
+    //Current floor the player is on.
+    this.state.tickCounter = 0;
+    //Current tick the game is on, a tick is normally 1 every 1/60th of a second.
+    this.menu = "battle";
+    //Current menu the player is on, battle = battle screen, inventory = inventory screen.
+    this.inventory = [];
+}
+
+var game = new Game();
+
 function Color (red, green, blue, alpha) {
     this.red = red;
     this.green = green;
@@ -5,13 +31,25 @@ function Color (red, green, blue, alpha) {
     this.alpha = alpha;
 }
 
-var c = document.getElementById('game'),
-ctx = c.getContext('2d');
+var c = [];
+var ctx = [];
 
-var dc = document.getElementById('drawing'),
+c[0] = document.getElementById('c-0');
+ctx[0] = c[0].getContext('2d');
+
+c[1] = document.getElementById('c-1');
+ctx[1] = c[1].getContext('2d');
+
+c[2] = document.getElementById('c-2');
+ctx[2] = c[2].getContext('2d');
+
+var dc = document.getElementById('drawing');
 dctx = dc.getContext('2d');
 
 var imgs=[];
+var blades = false;
+var handles = false;
+var frame = false;
 
 var defaultColors = {};
 
@@ -19,6 +57,10 @@ defaultColors.border = new Color(0, 38, 255, 255);
 defaultColors.lightMid = new Color(255, 0, 220, 255);
 defaultColors.darkMid = new Color(87, 0, 127, 255);
 defaultColors.shading = new Color(255, 255, 255, 255);
+
+defaultColors.lightMid2 = new Color(0, 175, 0, 255);
+defaultColors.darkMid2 = new Color(0, 255, 0, 255);
+defaultColors.shading2 = new Color(0, 140, 0, 255);
 
 //These colours are what appear in the images and what will be replaced upon inital generation.
 
@@ -44,13 +86,18 @@ function ColorLuminance(hex, lum) {
 	return rgb;
 }
 
-function Item() {
+function Entity () {
+    this.pos = {};
+    this.size = {};
+}
+
+function hasRarity () {
     var rareSeed = Math.random();
     
-    if ((rareSeed > 0) && (rareSeed < 0.29)) {
+    if ((rareSeed > 0) && (rareSeed < 0.24)) {
         this.rarity = raritys.trash;
         drops[0] += 1;
-    } else if ((rareSeed >= 0.3) && (rareSeed < 0.55)) {
+    } else if ((rareSeed >= 0.25) && (rareSeed < 0.55)) {
         this.rarity = raritys.common;
         drops[1] += 1;
     } else if ((rareSeed >= 0.55) && (rareSeed < 0.75)) {
@@ -59,21 +106,22 @@ function Item() {
     } else if ((rareSeed >= 0.75) && (rareSeed < 0.85)) {
         this.rarity = raritys.rare;
         drops[3] += 1;
-    } else if ((rareSeed >= 0.85) && (rareSeed < 0.92)) {
+    } else if ((rareSeed >= 0.85) && (rareSeed < 0.88)) {
         this.rarity = raritys.uRare;
         drops[4] += 1;
-    } else if ((rareSeed >= 0.92) && (rareSeed < 0.95)) {
+    } else if ((rareSeed >= 0.88) && (rareSeed < 0.89)) {
         this.rarity = raritys.Legendary;
         drops[5] += 1;
-    } else if ((rareSeed >= 0.95) && (rareSeed < 0.96)) {
+    } else if ((rareSeed >= 0.89) && (rareSeed < 0.895)) {
         this.rarity = raritys.uLegendary;
         drops[6] += 1;
     } else {
         this.rarity = raritys.trash;
         drops[0] += 1;
     }
-    
-    console.log("Generated a " + this.rarity.name + " Weapon");
+}
+
+function hasColour(variance) {
     
     var rSeed = Math.random();
     var gSeed = Math.random();
@@ -84,51 +132,152 @@ function Item() {
     var main2Light = 120;
     var shadeLight = 200;
     
-    var variance = this.rarity.colorVariance;
-    
     this.colors = {};
     this.colors.border = new Color (borderLight + (variance * rSeed), borderLight + (variance * gSeed), borderLight + (variance * bSeed), 255);
     this.colors.darkMid = new Color (main1Light + (variance * rSeed), main1Light + (variance * gSeed), main1Light + (variance * bSeed), 255);
     this.colors.lightMid = new Color (main2Light + (variance * rSeed), main2Light + (variance * gSeed), main2Light + (variance * bSeed), 255);
     this.colors.shading = new Color (shadeLight + (variance * rSeed), shadeLight + (variance * gSeed), shadeLight + (variance * bSeed), 255);
+    
+    var main1Light = 110;
+    var main2Light = 150;
+    var shadeLight = 230;
+    
+    this.colors.darkMid2 = new Color (main1Light + (variance * rSeed), main1Light + (variance * gSeed), main1Light + (variance * bSeed), 255);
+    this.colors.lightMid2 = new Color (main2Light + (variance * rSeed), main2Light + (variance * gSeed), main2Light + (variance * bSeed), 255);
+    this.colors.shading2 = new Color (shadeLight + (variance * rSeed), shadeLight + (variance * gSeed), shadeLight + (variance * bSeed), 255);
 }
 
-function GenWeapon() {
-    dctx.save();
-    var wep = new Item();
+function Weapon(width, height) {
     
-    dctx.clearRect(0, 0, dc.width, dc.height);
+    Entity.call(this);
+    hasRarity.call(this);
     
-    dctx.drawImage(imgs[0], Math.floor(5 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
-    dctx.drawImage(imgs[1], Math.floor(4 * Math.random()) * 64, 0, 64, 64, 0, 0, 256, 256);
+    var variance = this.rarity.colorVariance;
     
-    wep.Image = recolor(defaultColors, wep.colors);
+    hasColour.call(this, variance);
     
-    if (wep.rarity.auraColors.length > 0) {
-        for (var i = 0; i < wep.rarity.auraWidth; i += 1) {
-            dctx.clearRect(0, 0, dc.width, dc.height);
-            dctx.putImageData(wep.Image, 0, 0);
-            wep.Image = outline(wep.rarity.auraColors[i % wep.rarity.auraColors.length], 255 - (255 / wep.rarity.auraWidth * i));
-            dctx.putImageData(wep.Image, 0, 0);
+    console.log(this);
+    
+    this.damage = Math.ceil(Math.pow(this.rarity.multiplier * (game.state.floorNum + 1), 1.5));
+    
+    this.bladePos = {};
+    this.handlePos = {};
+    this.bladeNum = Math.floor(game.sourceImgConsts.numBlades * Math.random());
+    this.handleNum = Math.floor(game.sourceImgConsts.numHandles * Math.random());
+    
+    this.image = genWeaponImage(this, width, height);
+    
+    var temp = getTrueDimensions(this.image);
+    
+    this.image = temp[0];
+    this.size.width = temp[1];
+    this.size.height = temp[2];
+    
+    //dctx.putImageData(this.Image, 0, 0);
+    
+    console.log(this);
+}
+
+function sortInventory() {
+    game.inventory.sort(function(a, b) {
+        var valA = a.damage;
+        var valB = b.damage;
+        if (valA > valB) {
+            return -1;
         }
-    }
-    dctx.restore();
-    
-    dctx.putImageData(wep.Image, 0, 0);
-    
-    return wep;
+        if (valA < valB) {
+            return 1;
+        }
+
+        // names must be equal
+        return 0;
+    });
 }
 
 function newWep() {
-    heldWep = GenWeapon();
+    if (game.hasOwnProperty("currentWep") && (game.currentWep.hasOwnProperty("image"))) {
+        //for (var i = 0; i < 24; i += 1) {
+            //if(game.inventory[24] == undefined){
+                game.inventory[24] = new Weapon(128, 128);
+        sortInventory();
+                //break;
+            //}
+        //}
+        console.log("New weapon in inventory");
+    } else {
+        game.currentWep = new Weapon(128, 128);
+    }
 }
 
-var wepTimer = setInterval(newWep, 1000);
-
-function getPixelPos (x, y, width, height) {
-    return ((y * width + x) * 4);
+function Enemy(width, height) {
+    Entity.call(this);
+    var variance = 200;
+    hasColour.call(this, variance);
+    
+    this.maxHealth = Math.ceil(Math.pow(game.state.floorNum + 1, 2.5));
+    this.curHealth = this.maxHealth;
+    
+    this.image = genEnemyImage(this, width, height);
+    
+    var temp = getTrueDimensions(this.image);
+    
+    this.image = temp[0];
+    this.size.width = temp[1];
+    this.size.height = temp[2];
 }
 
-console.log(getPixelPos(512, 512, 512, 512));
+function newEnemy() {
+    game.currentEnemy = new Enemy(128, 128);
+}
+
+//var thisTimer = setInterval(newthis, 1000);
+
+function showBattle() {
+    game.menu = "battle";
+}
+
+function showInventory() {
+    game.menu = "inventory";
+}
+
+function offset(i, x, y) {
+    return i + ((x + (y * dc.width)) * 4);
+}
+
+//Take an i position in the background canvas data array, and an x and y offset from it and resolve it to a new i.
+
+function mouseMove(e) {    
+    game.mouse.x = e.clientX;
+    game.mouse.y = e.clientY - c[2].offsetTop;
+    
+    //c[2].style.cursor = "none";
+}
+
+function mouseDown(e) {
+    game.mouse.down = true;
+    if (game.menu == "inventory") {
+        var temp = {};
+        if ((game.mouse.x < 460) && game.mouse.y < 210) {
+            var i = Math.floor(game.mouse.x / 70) + Math.floor(game.mouse.y / 70) * 8;
+            if (game.inventory[i] != undefined) {
+                temp = game.inventory[i];
+                game.inventory[i] = game.currentWep;
+                game.currentWep = temp;
+                sortInventory();
+            }
+            console.log(i);
+        }
+    }
+}
+
+function mouseUp(e) {
+    game.mouse.down = false;
+}
+
+//console.log(getPixelPos(512, 512, 512, 512));
 
 //Get the posistion of the pixel in the array, where the array starts at 0,0 top left and ends at width, height bottom right.
+
+c[2].addEventListener("mousemove", mouseMove, false);
+c[2].addEventListener("mouseup", mouseUp, false);
+c[2].addEventListener("mousedown", mouseDown, false);

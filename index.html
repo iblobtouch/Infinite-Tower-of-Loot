@@ -19,16 +19,26 @@
 				</h1>
 			</div>
 		</noscript>
-        <canvas id="game"></canvas>
-        <canvas id="drawing"></canvas>
         
+        <div id = "main area">
+            <div id="content">
+                <div id = "buttons">
+                    <!--<button id="generate" onclick="newWep()">Generate a new weapon</button>-->
+                    <button id="mainarea" onclick="showBattle()">Battle</button>
+                    <button id="inventory" onclick="showInventory()">Inventory</button>
+                </div>
+                <canvas class="game" id="c-0" style="z-index: -1"></canvas>
+                <canvas class="game" id="c-1" style="z-index: 0"></canvas>
+                <canvas class="game" id="c-2" style="z-index: 1"></canvas>
+            </div>
+        </div>
+        
+        <canvas id="drawing"></canvas>
         <script src="scripts/globals.js"></script>
         <script src="scripts/rarityData.js"></script>
         <script src="scripts/ticker.js"></script>
         <script src="scripts/draw.js"></script>
         
-        <button id="generate" onclick="newWep()">Generate a new weapon</button>
-        
-        <textarea id="Out" rows="10" cols="100" placeholder="0">Data will output here.</textarea>
+        <!--<textarea id="Out" rows="10" cols="100" placeholder="0">Data will output here.</textarea>-->
     </body>
 </html>

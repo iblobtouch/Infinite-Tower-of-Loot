@@ -28,12 +28,12 @@ raritys.uRare = new Rarity("Ultra Rare", 5, 60, 5);
 
 raritys.uRare.auraColors[0] = new Color(45, 0, 255, 255);
 
-raritys.Legendary = new Rarity("Legendary", 10, 80, 6);
+raritys.Legendary = new Rarity("Legendary", 10, 80, 13);
 
-raritys.Legendary.auraColors[0] = new Color(0, 0, 0, 255);
-raritys.Legendary.auraColors[1] = new Color(100, 0, 0, 255);
+raritys.Legendary.auraColors[0] = new Color(100, 0, 0, 255);
+raritys.Legendary.auraColors[1] = new Color(0, 0, 0, 255);
 
-raritys.uLegendary = new Rarity("Ultra Legendary", 100, 150, 7);
+raritys.uLegendary = new Rarity("Ultra Legendary", 100, 150, 15);
 
 raritys.uLegendary.auraColors[0] = new Color(148, 0, 211, 255);
 raritys.uLegendary.auraColors[1] = new Color(75, 0, 130, 255);
